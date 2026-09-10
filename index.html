@@ -158,7 +158,7 @@
   <section>
     <h2>Offer this</h2>
     <p class="hint">Copy it into the negotiation screen, hit suggest terms, then record what came back.</p>
-    <div class="action" id="action"></div>
+    <div class="action" id="action" aria-live="polite"></div>
 
     <div class="outcomes panel" style="margin-top:14px">
       <p>What happened after you offered?</p>
@@ -169,7 +169,7 @@
         <button class="act ghost" data-out="walked">I walked away</button>
         <button class="act ghost" data-out="reset">New negotiation</button>
       </div>
-      <div class="log" id="log"></div>
+      <div class="log" id="log" aria-live="polite"></div>
     </div>
   </section>
 
@@ -255,12 +255,15 @@
   const locked = k => $('l_'+k).checked;
 
   /* ---------- money ---------- */
-  const cur = () => $('cur').value;
+  const cur = () => $('cur').value.slice(0, 4);
+  const html = value => String(value).replace(/[&<>"']/g, char => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  })[char]);
   const fmt = v => { const a=Math.abs(v);
-    if(a>=1e6) return cur()+(v/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';
-    if(a>=1e4) return cur()+Math.round(v/1e3)+'k';
-    return cur()+Math.round(v).toLocaleString('nl-BE'); };
-  const fmtw = v => cur()+Math.round(v).toLocaleString('nl-BE');
+    if(a>=1e6) return html(cur())+(v/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';
+    if(a>=1e4) return html(cur())+Math.round(v/1e3)+'k';
+    return html(cur())+Math.round(v).toLocaleString('nl-BE'); };
+  const fmtw = v => html(cur())+Math.round(v).toLocaleString('nl-BE');
   const perLabel = () => ({'52':'/wk','12':'/month','1':'/year'})[$('period').value];
 
   // [min share of fixtures, max share, share of remaining games spent as an unused sub]
@@ -457,23 +460,29 @@
     render();
   }));
 
-  /* ---------- persistence: artifact storage, else session only ---------- */
+  /* ---------- persistence: host storage, else browser local storage ---------- */
   async function persist(){
-    if(!window.storage) return;
-    try{ await window.storage.set('fm26:contract-room', JSON.stringify(store)); }
-    catch(e){ /* keep going with in-memory data */ }
+    const value = JSON.stringify(store);
+    try{
+      if(window.storage) await window.storage.set('fm26:contract-room', value);
+      else localStorage.setItem('fm26:contract-room', value);
+      storeOk = true;
+    }catch(e){ storeOk = false; }
   }
   async function load(){
-    if(window.storage){
-      try{
-        const res = await window.storage.get('fm26:contract-room');
-        if(res && res.value) store = JSON.parse(res.value);
-        storeOk = true;
-      }catch(e){ storeOk = false; }
-    }
+    try{
+      const value = window.storage
+        ? (await window.storage.get('fm26:contract-room'))?.value
+        : localStorage.getItem('fm26:contract-room');
+      if(value){
+        const saved = JSON.parse(value);
+        if(saved && Array.isArray(saved.closes)) store = saved;
+      }
+      storeOk = true;
+    }catch(e){ storeOk = false; }
     $('storeState').textContent = storeOk
       ? 'Your closed deals are saved between sessions.'
-      : 'Running from a local file, so nothing is saved automatically. Export before you close the tab.';
+      : 'Storage is unavailable. Export before you close the tab.';
     render();
   }
 
@@ -487,7 +496,13 @@
   $('importFile').addEventListener('change', e=>{
     const f=e.target.files[0]; if(!f) return;
     const fr=new FileReader();
-    fr.onload=()=>{ try{ const d=JSON.parse(fr.result); if(d&&Array.isArray(d.closes)){ store=d; persist(); render(); } }catch(err){} };
+    fr.onload=()=>{ try{
+      const imported=JSON.parse(fr.result);
+      if(imported && Array.isArray(imported.closes) && imported.closes.every(x =>
+        x && typeof x.ctx==='string' && Number.isFinite(x.ratio))){
+        store={closes:imported.closes}; persist(); render();
+      }
+    }catch(err){} };
     fr.readAsText(f);
   });
 

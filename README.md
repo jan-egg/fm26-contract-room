@@ -40,7 +40,7 @@ Every deal you close logs the ratio between what you signed at and what was firs
 
 This is the point of the project. The published advice about FM26 negotiation is mostly from the game's launch window, and the game has been patched heavily since. Rather than pretend otherwise, the tool converts guesses into your own measured data as you use it.
 
-Data persists between sessions where the host environment supports it. Running from a local file it won't, so use the export button.
+Data persists between sessions in browsers that allow local storage, including normal local-file use in most browsers. Use the export button as a portable backup or when storage is blocked.
 
 ## Running it
 
