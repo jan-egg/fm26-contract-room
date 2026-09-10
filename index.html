@@ -90,8 +90,22 @@
   .notes ul{padding-left:16px;margin:0}
   .tag{display:inline-block;font-size:10.5px;padding:1px 5px;border:1px solid var(--rule-strong);
     border-radius:2px;color:var(--ink);background:#fff;margin-right:5px}
+  .capture-panel{margin-bottom:12px}
+  .capture-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+  .capture-head strong{font-family:'Archivo Narrow';font-size:16px}
+  .capture-head .hint{margin:3px 0 0}
+  kbd{font:inherit;font-size:11px;border:1px solid var(--rule-strong);background:#fff;padding:1px 4px;border-radius:2px}
+  .capture-label{display:inline-block;white-space:nowrap}
+  .capture-preview{display:flex;gap:14px;align-items:flex-start;margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)}
+  .capture-preview img{display:block;max-width:min(320px,100%);max-height:180px;border:1px solid var(--rule-strong);object-fit:contain;background:#fff}
+  .capture-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .capture-actions .hint{margin:0}
+  .capture-results{margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)}
+  .capture-field{display:inline-flex;align-items:center;gap:5px;margin:0 12px 8px 0;font-size:13px}
+  .capture-field input[type=number]{width:96px}
 
   @media (max-width:860px){ .cols{grid-template-columns:1fr} .notes{grid-template-columns:1fr} }
+  @media (max-width:560px){.capture-head,.capture-preview{display:block}.capture-label{margin-top:10px}.capture-preview img{margin-bottom:10px}}
 </style>
 </head>
 <body>
@@ -127,6 +141,29 @@
   <section>
     <h2>What he's demanding now</h2>
     <p class="hint">Refill this every round with whatever the agent came back with. Tick the padlock column for anything he's locked as non-negotiable.</p>
+    <div class="panel capture-panel">
+      <div class="capture-head">
+        <div>
+          <strong>Read a contract screenshot</strong>
+          <p class="hint">Paste a screenshot with <kbd>Ctrl</kbd> + <kbd>V</kbd>, or upload one. Check the suggestions before applying them.</p>
+        </div>
+        <label class="act capture-label" for="captureFile">Upload image</label>
+        <input type="file" id="captureFile" accept="image/*" hidden>
+      </div>
+      <div class="capture-preview" id="capturePreview" hidden>
+        <img id="captureImage" alt="Contract screenshot preview">
+        <div class="capture-actions">
+          <button class="act primary" id="readCapture" type="button">Read screenshot</button>
+          <button class="act ghost" id="clearCapture" type="button">Clear</button>
+          <span class="hint" id="captureStatus" role="status"></span>
+        </div>
+      </div>
+      <div class="capture-results" id="captureResults" hidden>
+        <p class="hint">Detected values are suggestions. Select the ones you want to copy into the demand sheet.</p>
+        <div id="captureFields"></div>
+        <button class="act primary" id="applyCapture" type="button">Apply selected values</button>
+      </div>
+    </div>
     <div class="panel" style="padding:6px 0 0">
       <table class="demand">
         <thead><tr><th>Term</th><th>Amount</th><th>Locked</th></tr></thead>
@@ -214,6 +251,7 @@
 
 </div>
 
+<script src="ocr.js"></script>
 <script>
 (function(){
   const $ = id => document.getElementById(id);
@@ -248,6 +286,13 @@
       '<td><input type="number" id="d_'+t.k+'" value="'+t.def+'" min="0" step="any" aria-label="'+t.label+'"></td>'+
       '<td><input type="checkbox" id="l_'+t.k+'" aria-label="'+t.label+' locked"></td>';
     dBody.appendChild(tr);
+  });
+
+  ContractCapture.init({
+    onApply: values => {
+      Object.entries(values).forEach(([key,value]) => { $('d_'+key).value=value; });
+      render();
+    }
   });
 
   const n = id => { const v=parseFloat($(id).value); return isNaN(v)?0:v; };
