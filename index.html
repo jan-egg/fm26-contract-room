@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contract Room — FM26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Archivo+Narrow:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#E9ECE4; --sheet:#F6F8F2; --ink:#16211C; --muted:#5C6A5F;
+    --rule:#C6CDBD; --rule-strong:#9BA893;
+    --act:#1D6B4A; --cost:#A8382B; --flag:#8A6A12;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:'Archivo',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:26px 18px 80px}
+  h1{font-family:'Archivo Narrow';font-weight:700;font-size:33px;margin:0;line-height:1}
+  .sub{color:var(--muted);font-size:13.5px;margin:5px 0 0;max-width:56ch}
+  .masthead{border-bottom:2px solid var(--ink);padding-bottom:10px;display:flex;
+    justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+  .phasebar{font-family:'Archivo Narrow';font-weight:600;font-size:13px;color:var(--muted);text-align:right}
+  .phasebar b{color:var(--ink);font-size:15px;display:block}
+
+  section{margin-top:24px}
+  h2{font-family:'Archivo Narrow';font-weight:600;font-size:18px;margin:0 0 3px}
+  .hint{color:var(--muted);font-size:12.5px;margin:0 0 10px;max-width:74ch}
+
+  .panel{background:var(--sheet);border:1px solid var(--rule-strong);padding:14px 16px}
+  .row{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end}
+  .field{display:flex;flex-direction:column;gap:3px}
+  .field label{font-size:12px;color:var(--muted)}
+  input,select{font-family:inherit;font-size:14px;color:var(--ink);background:#fff;
+    border:1px solid var(--rule-strong);border-radius:2px;padding:5px 7px;font-variant-numeric:tabular-nums}
+  input[type=number]{width:96px;text-align:right}
+  input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--act);outline-offset:1px}
+
+  .cols{display:grid;grid-template-columns:minmax(320px,1fr) minmax(340px,1.05fr);gap:22px;align-items:start}
+
+  table{border-collapse:collapse;width:100%}
+  .demand th,.demand td{padding:5px 10px;border-bottom:1px solid var(--rule);text-align:right;font-variant-numeric:tabular-nums}
+  .demand th{font-family:'Archivo Narrow';font-size:12.5px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--rule-strong)}
+  .demand td:first-child,.demand th:first-child{text-align:left;font-variant-numeric:normal}
+  .demand tr.head td{background:#DFE4D7;font-family:'Archivo Narrow';font-weight:600;font-size:12.5px;
+    letter-spacing:.03em;padding:4px 10px}
+  .demand input[type=number]{width:88px}
+  .demand input[type=checkbox]{width:15px;height:15px;accent-color:var(--cost)}
+
+  /* action card */
+  .action{border:1px solid var(--rule-strong);border-left:5px solid var(--act);background:var(--sheet);padding:16px 18px}
+  .action h3{font-family:'Archivo Narrow';font-size:21px;margin:0 0 2px;font-weight:700}
+  .action .why{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+  ol.steps{margin:0;padding-left:20px}
+  ol.steps li{margin-bottom:9px}
+  ol.steps li b{font-weight:600}
+  .strip{color:var(--cost)}
+  .keep{color:var(--act)}
+  .bignum{font-family:'Archivo Narrow';font-weight:700;font-size:27px;font-variant-numeric:tabular-nums;
+    display:block;line-height:1.1;margin:2px 0}
+  .costline{margin-top:14px;padding-top:11px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+  .costline strong{color:var(--ink);font-weight:600}
+  .warn{margin-top:12px;padding:9px 11px;background:#F4EEDC;border-left:3px solid var(--flag);font-size:13px}
+
+  .outcomes{margin-top:16px}
+  .outcomes p{font-size:12.5px;color:var(--muted);margin:0 0 7px}
+  .btns{display:flex;flex-wrap:wrap;gap:8px}
+  button.act{font-family:'Archivo Narrow';font-weight:600;font-size:14px;cursor:pointer;
+    background:#fff;border:1px solid var(--rule-strong);border-radius:2px;padding:7px 12px;color:var(--ink)}
+  button.act:hover{background:#EFF2E9}
+  button.act.primary{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+  button.act.ghost{border-style:dashed;color:var(--muted)}
+
+  .log{margin-top:10px;font-size:13px}
+  .log table{font-variant-numeric:tabular-nums}
+  .log td{padding:4px 9px;border-bottom:1px solid var(--rule)}
+  .log td:nth-child(n+2){text-align:right}
+  .log .r{color:var(--muted)}
+
+  .calib td{padding:5px 10px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums;text-align:right}
+  .calib td:first-child{text-align:left;font-variant-numeric:normal}
+  .calib .measured{color:var(--act);font-weight:600}
+  .calib .inferred{color:var(--muted)}
+
+  .notes{border-top:2px solid var(--ink);margin-top:32px;padding-top:14px;
+    display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .notes h3{font-family:'Archivo Narrow';font-size:15px;margin:0 0 6px}
+  .notes li,.notes p{font-size:12.5px;color:var(--muted);margin:0 0 6px}
+  .notes ul{padding-left:16px;margin:0}
+  .tag{display:inline-block;font-size:10.5px;padding:1px 5px;border:1px solid var(--rule-strong);
+    border-radius:2px;color:var(--ink);background:#fff;margin-right:5px}
+
+  @media (max-width:860px){ .cols{grid-template-columns:1fr} .notes{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <div>
+    <h1>Contract Room</h1>
+    <p class="sub">Type in what he's demanding. It tells you what to offer back, round by round, until he signs.</p>
+  </div>
+  <div class="phasebar">Round <b id="roundNum">1</b><span id="phaseName">Opening</span></div>
+</header>
+
+<section>
+  <div class="panel row">
+    <div class="field"><label for="ctx">Situation</label>
+      <select id="ctx">
+        <option value="transfer">Transfer target</option>
+        <option value="freeagent">Free agent / Bosman</option>
+        <option value="renewal">Renewal of my own player</option>
+      </select></div>
+    <div class="field"><label for="cur">Currency</label><input id="cur" value="€" style="width:56px;text-align:center"></div>
+    <div class="field"><label for="period">Wages shown per</label>
+      <select id="period"><option value="52">week</option><option value="12">month</option><option value="1">year</option></select></div>
+    <div class="field"><label for="years">Contract length (years)</label><input id="years" type="number" value="4" min="0.5" step="0.5"></div>
+    <div class="field"><label for="stall">Ladder rounds before pivoting</label><input id="stall" type="number" value="2" min="1" max="5"></div>
+    <div class="field"><label for="walkaway">Walk-away wage ceiling</label><input id="walkaway" type="number" value="0" min="0"></div>
+  </div>
+</section>
+
+<div class="cols">
+
+  <section>
+    <h2>What he's demanding now</h2>
+    <p class="hint">Refill this every round with whatever the agent came back with. Tick the padlock column for anything he's locked as non-negotiable.</p>
+    <div class="panel" style="padding:6px 0 0">
+      <table class="demand">
+        <thead><tr><th>Term</th><th>Amount</th><th>Locked</th></tr></thead>
+        <tbody id="demandBody"></tbody>
+      </table>
+    </div>
+    <div class="panel" style="margin-top:12px">
+      <p class="hint" style="margin-bottom:8px">Not a forecast. Your fixture count is a known number, and role and position set how much of it he can realistically trigger. Bonuses are priced as a range between a bad season and an ever-present one.</p>
+      <div class="row">
+        <div class="field"><label for="fixtures">Games in your season</label><input id="fixtures" type="number" value="46" min="1"></div>
+        <div class="field"><label for="role">Role he'll get</label>
+          <select id="role">
+            <option value="starter">Nailed-on starter</option>
+            <option value="rotation" selected>Rotation</option>
+            <option value="backup">Backup</option>
+            <option value="fringe">Fringe / prospect</option>
+          </select></div>
+        <div class="field"><label for="pos">Position</label>
+          <select id="pos">
+            <option value="gk">Goalkeeper</option>
+            <option value="def">Defender</option>
+            <option value="mid" selected>Midfielder</option>
+            <option value="att">Forward</option>
+          </select></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Offer this</h2>
+    <p class="hint">Copy it into the negotiation screen, hit suggest terms, then record what came back.</p>
+    <div class="action" id="action"></div>
+
+    <div class="outcomes panel" style="margin-top:14px">
+      <p>What happened after you offered?</p>
+      <div class="btns">
+        <button class="act primary" data-out="accepted">He signed</button>
+        <button class="act" data-out="moved">Countered lower</button>
+        <button class="act" data-out="stalled">Same demand again</button>
+        <button class="act ghost" data-out="walked">I walked away</button>
+        <button class="act ghost" data-out="reset">New negotiation</button>
+      </div>
+      <div class="log" id="log"></div>
+    </div>
+  </section>
+
+</div>
+
+<section>
+  <h2>Opening factors</h2>
+  <p class="hint">Grey figures are guesses taken from community guides for a launch-window build of FM26. Green figures are measured from your own closed deals and override the guess once there are three of them.</p>
+  <div class="panel" style="padding:6px 0 0">
+    <table class="calib"><tbody id="calibBody"></tbody></table>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button class="act" id="exportBtn">Export my data</button>
+    <button class="act" id="importBtn">Import data</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none">
+    <span class="hint" id="storeState" style="margin:0"></span>
+  </div>
+</section>
+
+<div class="notes">
+  <div>
+    <h3>Why it strips before it haggles</h3>
+    <ul>
+      <li><span class="tag">reported</span>FM26 agents barely move on base wage but will drop or remove peripheral demands like appearance fees. So the wage ladder is short and the stripping does the work.</li>
+      <li><span class="tag">reported</span>Bonuses don't count against your wage budget, which is why they get waved through and then quietly outgrow the wage.</li>
+      <li><span class="tag">reported</span>A longer deal and a higher squad status both pull the wage down without costing you cash.</li>
+      <li><span class="tag">reported</span>Raising the agent fee instead of the wage converts a recurring cost into a one-off.</li>
+      <li><span class="tag">reported</span>Walking away and returning about a week later often brings a softer demand.</li>
+    </ul>
+  </div>
+  <div>
+    <h3>Where it could be wrong</h3>
+    <ul>
+      <li><span class="tag">assumed</span>Removal order: unused sub fee, then appearance fee, then wage rise, then goal and assist bonuses. Ranked by how much each one costs when the signing works out, not by tested agent resistance.</li>
+      <li><span class="tag">assumed</span>Concession order when the ladder dies: agent fee, signing-on fee, loyalty bonus.</li>
+      <li><span class="tag">assumed</span>52-week years and no mid-contract status changes. Bonus costs are a range, not a prediction: the floor is a bad season, the ceiling is your full fixture list. The ceiling is the honest number, since nothing caps a bonus.</li>
+      <li><span class="tag">reported</span>There's a negotiation bug where editing anything snaps a softened demand back to the original figure. If the agent volunteers a low wage, take it rather than counter.</li>
+      <li>Sell-on clauses are deliberately not used as a sweetener here. They tax the exit, and the exit is the point.</li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+
+  /* ---------- demand sheet ---------- */
+  const TERMS = [
+    {h:'Pay'},
+    {k:'wage',    label:'Base wage',              def:12000, lock:true},
+    {k:'rise',    label:'Yearly wage rise (%)',   def:5,     lock:true},
+    {k:'signon',  label:'Signing-on fee',         def:0,     lock:true},
+    {k:'loyalty', label:'Loyalty bonus',          def:0,     lock:true},
+    {k:'agent',   label:'Agent fee',              def:0,     lock:true},
+    {h:'Bonuses'},
+    {k:'appfee',  label:'Appearance fee',         def:800,   lock:true},
+    {k:'goal',    label:'Goal bonus',             def:1200,  lock:true},
+    {k:'assist',  label:'Assist bonus',           def:600,   lock:true},
+    {k:'csb',     label:'Clean sheet bonus',      def:0,     lock:true},
+    {k:'sub',     label:'Unused sub fee',         def:350,   lock:true},
+    {h:'Clauses'},
+    {k:'wageafter',label:'Wage after X matches',  def:0,     lock:true},
+    {k:'release', label:'Minimum fee release',    def:0,     lock:true}
+  ];
+  const STRIP_ORDER = ['sub','appfee','rise','goal','assist','csb'];
+  const CONCESSIONS = ['agent','signon','loyalty'];
+  const LABEL = {}; TERMS.forEach(t=>{ if(t.k) LABEL[t.k]=t.label; });
+
+  const dBody = $('demandBody');
+  TERMS.forEach(t=>{
+    const tr=document.createElement('tr');
+    if(t.h){ tr.className='head'; tr.innerHTML='<td colspan="3">'+t.h+'</td>'; dBody.appendChild(tr); return; }
+    tr.innerHTML='<td>'+t.label+'</td>'+
+      '<td><input type="number" id="d_'+t.k+'" value="'+t.def+'" min="0" step="any" aria-label="'+t.label+'"></td>'+
+      '<td><input type="checkbox" id="l_'+t.k+'" aria-label="'+t.label+' locked"></td>';
+    dBody.appendChild(tr);
+  });
+
+  const n = id => { const v=parseFloat($(id).value); return isNaN(v)?0:v; };
+  const dem = k => n('d_'+k);
+  const locked = k => $('l_'+k).checked;
+
+  /* ---------- money ---------- */
+  const cur = () => $('cur').value;
+  const fmt = v => { const a=Math.abs(v);
+    if(a>=1e6) return cur()+(v/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';
+    if(a>=1e4) return cur()+Math.round(v/1e3)+'k';
+    return cur()+Math.round(v).toLocaleString('nl-BE'); };
+  const fmtw = v => cur()+Math.round(v).toLocaleString('nl-BE');
+  const perLabel = () => ({'52':'/wk','12':'/month','1':'/year'})[$('period').value];
+
+  // [min share of fixtures, max share, share of remaining games spent as an unused sub]
+  const ROLE = { starter:[0.55,0.92,0.15], rotation:[0.30,0.62,0.40],
+                 backup:[0.10,0.35,0.50],  fringe:[0.02,0.20,0.30] };
+  // per-appearance rates, floor to ceiling
+  const POS = { gk:{g:[0,0],     a:[0,0.02],   cs:[0.18,0.45]},
+                def:{g:[0.02,0.12], a:[0.02,0.12], cs:[0.18,0.45]},
+                mid:{g:[0.04,0.30], a:[0.06,0.35], cs:[0,0]},
+                att:{g:[0.20,0.85], a:[0.06,0.30], cs:[0,0]} };
+
+  function events(hi){
+    const F=n('fixtures'), r=ROLE[$('role').value], p=POS[$('pos').value];
+    const apps = F*(hi?r[1]:r[0]);
+    return { apps, bench:(F-apps)*r[2],
+             goals:apps*(hi?p.g[1]:p.g[0]), assists:apps*(hi?p.a[1]:p.a[0]), cs:apps*(hi?p.cs[1]:p.cs[0]) };
+  }
+  function bonusSeason(p, hi){
+    const e=events(hi);
+    return e.apps*(p.appfee||0) + e.goals*(p.goal||0) + e.assists*(p.assist||0)
+         + e.cs*(p.csb||0) + e.bench*(p.sub||0);
+  }
+  function packageCost(p){
+    const yrs=Math.max(n('years'),0.5), div=parseFloat($('period').value);
+    const weekly=p.wage*div/52, r=(p.rise||0)/100;
+    let wageTotal=0, y=yrs;
+    for(let k=0;y>0;k++){ const s=Math.min(1,y); wageTotal+=weekly*52*s*Math.pow(1+r,k); y-=s; }
+    const gtd = wageTotal + (p.signon||0) + (p.loyalty||0) + (p.agent||0);
+    const lo = bonusSeason(p,false)*yrs, hi = bonusSeason(p,true)*yrs;
+    return { gtd, varLo:lo, varHi:hi, lo:gtd+lo, hi:gtd+hi, weekly, yrs };
+  }
+  const fmtRange = (a,b) => (Math.round(a)===Math.round(b)) ? fmt(a) : fmt(a)+' to '+fmt(b);
+  const demandPackage = () => { const p={}; TERMS.forEach(t=>{ if(t.k) p[t.k]=dem(t.k); }); return p; };
+
+  /* ---------- state ---------- */
+  const OPENING = { transfer:0.80, freeagent:0.65, renewal:0.85 };
+  const CTXNAME = { transfer:'Transfer target', freeagent:'Free agent', renewal:'Renewal' };
+  let S = null, store = { closes: [] }, storeOk = false;
+  const fresh = () => ({ round:1, phase:'open', stalls:0, given:[], lastOffer:null, openDemand:null, log:[] });
+
+  function openingFactor(ctx){
+    const c = store.closes.filter(x=>x.ctx===ctx);
+    if(c.length>=3){
+      const avg = c.reduce((s,x)=>s+x.ratio,0)/c.length;
+      return { f: Math.max(0.5, Math.round((avg-0.08)*100)/100), measured:true, nn:c.length, avg };
+    }
+    return { f: OPENING[ctx], measured:false, nn:c.length };
+  }
+
+  /* ---------- the recommendation ---------- */
+  function recommend(){
+    const ctx=$('ctx').value, d=demandPackage(), steps=[], warns=[];
+    const of=openingFactor(ctx);
+    const offer = Object.assign({}, d);
+
+    if(S.round===1){
+      S.openDemand = d.wage;
+      steps.push('<b>Frame it first.</b> Set the length to '+n('years')+' years and give him the highest squad status you will actually honour. Both are reported to pull the wage down before you have argued about it.');
+    }
+
+    // strip
+    const toStrip = STRIP_ORDER.filter(k=>d[k]>0 && !locked(k));
+    const lockedStrip = STRIP_ORDER.filter(k=>d[k]>0 && locked(k));
+    const yrsN = Math.max(n('years'),0.5);
+    const ceilingOf = keys => { const s={}; keys.forEach(k=>s[k]=d[k]); return bonusSeason(s,true)*yrsN; };
+
+    if(toStrip.length){
+      steps.push('<b class="strip">Remove and exclude:</b> '+toStrip.map(k=>LABEL[k]).join(', ')+
+        '. Worth up to <b>'+fmt(ceilingOf(toStrip))+'</b> over the deal if he plays everything. Exclude them from negotiation so they cannot creep back in on the next counter.');
+      toStrip.forEach(k=>offer[k]=0);
+    }
+    if(lockedStrip.length){
+      steps.push('<b>He has locked '+lockedStrip.map(k=>LABEL[k]).join(', ')+'</b>, an exposure of up to '+fmt(ceilingOf(lockedStrip))+
+        '. Ask the agent not to lock clauses down, then remove them. If he will not budge, scale them down in the same proportion as the wage rather than leaving them at the demanded figure.');
+    }
+
+    // clauses
+    if(d.release>0){
+      steps.push('<b>Release clause at '+fmt(d.release)+'.</b> '+(locked('release')
+        ? 'Locked, so push the value up as far as he will take it. A clause near his current worth kills the resale, which costs you far more than the wage ever will.'
+        : 'Remove it. If he insists, raise the figure well above what you expect him to be worth on exit.'));
+    }
+    if(d.wageafter>0 && locked('wageafter')){
+      warns.push('The wage-after-X-matches clause is locked. Do not strip it, and cut it by the same percentage as the base wage, or the deal quietly reprices itself mid-contract.');
+    }
+
+    // concessions already handed over stay in the offer
+    CONCESSIONS.forEach(k=>{ if(!S.given.includes(k)) offer[k]=0; });
+    const zeroed = CONCESSIONS.filter(k=>d[k]>0 && !S.given.includes(k));
+    if(zeroed.length && S.round===1){
+      steps.push('<b>Zero the '+zeroed.map(k=>LABEL[k].toLowerCase()).join(' and ')+' for now.</b> These are your currency for later rounds, so do not spend them in the opening offer.');
+    }
+
+    // wage
+    let wage, why;
+    if(S.phase==='open'){
+      wage = d.wage * of.f;
+      why = of.measured
+        ? 'Opening at '+Math.round(of.f*100)+'% of his demand. That is your own number: your last '+of.nn+' '+CTXNAME[ctx].toLowerCase()+' deals closed at an average of '+Math.round(of.avg*100)+'% of the first demand.'
+        : 'Opening at '+Math.round(of.f*100)+'% of his demand. Community figure for a '+CTXNAME[ctx].toLowerCase()+', not yet tested in your saves.';
+    } else if(S.phase==='ladder'){
+      wage = (S.lastOffer + d.wage)/2;
+      why = 'Splitting the difference between your last offer and where he has landed.';
+    } else if(S.phase==='pivot'){
+      wage = S.lastOffer;
+      const next = CONCESSIONS.find(k=>!S.given.includes(k));
+      if(next){
+        const amt = d[next]>0 ? d[next] : (next==='agent' ? d.wage*8 : d.wage*4);
+        offer[next] = amt;
+        steps.push('<b class="keep">Hold the wage and give him the '+LABEL[next].toLowerCase()+' instead:</b> '+fmt(amt)+
+          '. A one-off payment, and it never scales with how well he plays. Raise this rather than the weekly figure.');
+        why = 'Wage frozen. The ladder stopped moving, so you are buying the signature with a lump sum instead.';
+      } else {
+        S.phase='walk';
+      }
+    }
+    if(S.phase==='walk'){
+      wage = S.lastOffer;
+      why = 'You are out of cheap concessions.';
+      steps.push('<b>End the talks.</b> Walk away and re-approach in about a week. Agents are reported to come back softer, and free agents soften a lot more in late August. If he does not move, he was never worth this price.');
+    }
+    offer.wage = Math.round(wage);
+
+    // walk-away ceiling
+    const ceil = n('walkaway');
+    if(ceil>0 && offer.wage>ceil){
+      warns.push('This offer is above the ceiling you set of '+fmtw(ceil)+' '+perLabel()+'. Walk.');
+    }
+
+    steps.push('<b>Offer this wage:</b> <span class="bignum">'+fmtw(offer.wage)+' '+perLabel()+'</span>against his '+fmtw(d.wage)+' '+perLabel()+'.');
+
+    const cD=packageCost(d), cO=packageCost(offer);
+    return { steps, warns, offer, why, cD, cO, savedLo:cD.lo-cO.lo, savedHi:cD.hi-cO.hi };
+  }
+
+  function render(){
+    if(!S) S=fresh();
+    const r=recommend();
+    $('roundNum').textContent=S.round;
+    $('phaseName').textContent={open:'Opening',ladder:'Wage ladder',pivot:'Pivot to lump sums',walk:'Walk away'}[S.phase];
+
+    const head={open:'Strip it, then open low',ladder:'Close the gap',pivot:'Stop raising the wage',walk:'Leave the room'}[S.phase];
+    $('action').innerHTML =
+      '<h3>'+head+'</h3><p class="why">'+r.why+'</p>'+
+      '<ol class="steps">'+r.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol>'+
+      r.warns.map(w=>'<div class="warn">'+w+'</div>').join('')+
+      '<div class="costline">Your offer costs <strong>'+fmtRange(r.cO.lo,r.cO.hi)+'</strong> over '+r.cO.yrs+
+        ' years. His demand costs <strong>'+fmtRange(r.cD.lo,r.cD.hi)+'</strong>. You save '+fmt(r.savedLo)+
+        ' if he barely plays and <strong>'+fmt(r.savedHi)+'</strong> if he plays everything.<br>'+
+        'Guaranteed either way: '+fmt(r.cO.gtd)+'. Bonus exposure on top: '+fmtRange(r.cO.varLo,r.cO.varHi)+
+        '. Wage budget sees '+fmtw(r.cO.weekly)+'/wk, the ceiling is really '+fmtw(r.cO.hi/(52*r.cO.yrs))+'/wk.</div>';
+
+    $('log').innerHTML = S.log.length
+      ? '<table><tbody>'+S.log.map(l=>'<tr><td class="r">Round '+l.round+'</td><td>offered '+fmtw(l.offered)+
+          '</td><td>he wanted '+fmtw(l.demand)+'</td><td>'+l.out+'</td></tr>').join('')+'</tbody></table>'
+      : '';
+    renderCalib();
+  }
+
+  function renderCalib(){
+    $('calibBody').innerHTML = Object.keys(OPENING).map(ctx=>{
+      const of=openingFactor(ctx);
+      return '<tr><td>'+CTXNAME[ctx]+'</td>'+
+        '<td class="'+(of.measured?'measured':'inferred')+'">'+Math.round(of.f*100)+'%</td>'+
+        '<td class="inferred">'+(of.measured
+          ? 'from '+of.nn+' of your deals'
+          : (of.nn ? of.nn+' of 3 deals logged' : 'community figure'))+'</td></tr>';
+    }).join('');
+  }
+
+  /* ---------- outcomes ---------- */
+  document.querySelectorAll('[data-out]').forEach(b=>b.addEventListener('click',()=>{
+    const out=b.dataset.out;
+    if(out==='reset'){ S=fresh(); render(); return; }
+    const r=recommend(), d=demandPackage();
+    S.log.push({round:S.round, offered:r.offer.wage, demand:d.wage,
+      out:{accepted:'signed',moved:'countered lower',stalled:'no movement',walked:'walked away'}[out]});
+
+    if(out==='accepted'){
+      const ratio = S.openDemand>0 ? r.offer.wage/S.openDemand : 1;
+      store.closes.push({ctx:$('ctx').value, ratio:Math.min(1.2,ratio), rounds:S.round, at:Date.now()});
+      persist();
+      const keep=S.log.slice();
+      S=fresh(); S.log=keep;
+      S.log.push({round:'—', offered:r.offer.wage, demand:S.openDemand||d.wage, out:'logged for calibration'});
+      render(); return;
+    }
+    S.lastOffer = r.offer.wage;
+    if(S.phase==='pivot'){ const next=CONCESSIONS.find(k=>!S.given.includes(k)); if(next) S.given.push(next); }
+    if(out==='moved'){ S.stalls=0; S.phase=(S.phase==='pivot'||S.phase==='walk')?S.phase:'ladder'; }
+    if(out==='stalled'){ S.stalls++; if(S.phase!=='pivot'&&S.phase!=='walk'){ S.phase = S.stalls>=n('stall')?'pivot':'ladder'; } }
+    if(out==='walked'){ S.phase='walk'; }
+    S.round++;
+    render();
+  }));
+
+  /* ---------- persistence: artifact storage, else session only ---------- */
+  async function persist(){
+    if(!window.storage) return;
+    try{ await window.storage.set('fm26:contract-room', JSON.stringify(store)); }
+    catch(e){ /* keep going with in-memory data */ }
+  }
+  async function load(){
+    if(window.storage){
+      try{
+        const res = await window.storage.get('fm26:contract-room');
+        if(res && res.value) store = JSON.parse(res.value);
+        storeOk = true;
+      }catch(e){ storeOk = false; }
+    }
+    $('storeState').textContent = storeOk
+      ? 'Your closed deals are saved between sessions.'
+      : 'Running from a local file, so nothing is saved automatically. Export before you close the tab.';
+    render();
+  }
+
+  $('exportBtn').addEventListener('click',()=>{
+    const blob=new Blob([JSON.stringify(store,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='fm26-contract-room-data.json'; a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  $('importBtn').addEventListener('click',()=>$('importFile').click());
+  $('importFile').addEventListener('change', e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const fr=new FileReader();
+    fr.onload=()=>{ try{ const d=JSON.parse(fr.result); if(d&&Array.isArray(d.closes)){ store=d; persist(); render(); } }catch(err){} };
+    fr.readAsText(f);
+  });
+
+  document.addEventListener('input', ()=>render());
+  document.addEventListener('change', ()=>render());
+  load();
+})();
+</script>
+</body>
+</html>
