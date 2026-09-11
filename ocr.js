@@ -63,7 +63,7 @@
   const loadOcr = () => new Promise((resolve,reject) => {
     if(window.Tesseract){ resolve(window.Tesseract); return; }
     const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
     script.onload = () => window.Tesseract ? resolve(window.Tesseract) : reject(new Error('OCR unavailable'));
     script.onerror = () => reject(new Error('OCR download failed'));
     document.head.appendChild(script);

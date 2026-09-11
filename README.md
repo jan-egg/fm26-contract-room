@@ -45,6 +45,10 @@ Calibration is saved in browser storage when available. Export it before clearin
 
 Screenshot OCR is optional and loads Tesseract from jsDelivr the first time you use it. The tool still works without OCR, including when offline.
 
+## Privacy and security
+
+There is no server or account. Screenshots are read in your browser and are not sent to this project. Calibration data stays in browser storage unless you export it. The OCR feature does download a pinned Tesseract script from jsDelivr, so disable OCR or use a trusted local copy if your environment does not allow third-party scripts.
+
 ## Running it
 
 Open `index.html` in a browser. To publish it, enable GitHub Pages and deploy the repository from the `main` branch and root folder.

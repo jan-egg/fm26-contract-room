@@ -506,7 +506,16 @@
   }));
 
   /* ---------- persistence: host storage, else browser local storage ---------- */
+  const normalizeStore = value => {
+    if(!value || !Array.isArray(value.closes)) return null;
+    const closes = value.closes.filter(item =>
+      item && Object.prototype.hasOwnProperty.call(OPENING,item.ctx) &&
+      Number.isFinite(item.ratio) && item.ratio >= 0 && item.ratio <= 1.2
+    ).slice(-1000);
+    return { closes };
+  };
   async function persist(){
+    store = normalizeStore(store) || { closes: [] };
     const value = JSON.stringify(store);
     try{
       if(window.storage) await window.storage.set('fm26:contract-room', value);
@@ -520,8 +529,7 @@
         ? (await window.storage.get('fm26:contract-room'))?.value
         : localStorage.getItem('fm26:contract-room');
       if(value){
-        const saved = JSON.parse(value);
-        if(saved && Array.isArray(saved.closes)) store = saved;
+        store = normalizeStore(JSON.parse(value)) || { closes: [] };
       }
       storeOk = true;
     }catch(e){ storeOk = false; }
@@ -540,13 +548,12 @@
   $('importBtn').addEventListener('click',()=>$('importFile').click());
   $('importFile').addEventListener('change', e=>{
     const f=e.target.files[0]; if(!f) return;
+    if(f.size > 1024 * 1024){ e.target.value=''; return; }
     const fr=new FileReader();
     fr.onload=()=>{ try{
       const imported=JSON.parse(fr.result);
-      if(imported && Array.isArray(imported.closes) && imported.closes.every(x =>
-        x && typeof x.ctx==='string' && Number.isFinite(x.ratio))){
-        store={closes:imported.closes}; persist(); render();
-      }
+      const normalized=normalizeStore(imported);
+      if(normalized){ store=normalized; persist(); render(); }
     }catch(err){} };
     fr.readAsText(f);
   });
