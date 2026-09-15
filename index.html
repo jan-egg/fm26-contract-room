@@ -133,6 +133,7 @@
     <div class="field"><label for="years">Contract length (years)</label><input id="years" type="number" value="4" min="0.5" step="0.5"></div>
     <div class="field"><label for="stall">Ladder rounds before pivoting</label><input id="stall" type="number" value="2" min="1" max="5"></div>
     <div class="field"><label for="walkaway">Walk-away wage ceiling</label><input id="walkaway" type="number" value="0" min="0"></div>
+    <button class="act ghost" id="clearInputs" type="button">Clear inputs</button>
   </div>
 </section>
 
@@ -556,6 +557,15 @@
       if(normalized){ store=normalized; persist(); render(); }
     }catch(err){} };
     fr.readAsText(f);
+  });
+
+  $('clearInputs').addEventListener('click',()=>{
+    document.querySelectorAll('input[type="number"]').forEach(input=>{ input.value='0'; });
+    $('cur').value='0';
+    document.querySelectorAll('input[type="checkbox"]').forEach(input=>{ input.checked=false; });
+    $('importFile').value='';
+    $('clearCapture').click();
+    render();
   });
 
   document.addEventListener('input', ()=>render());
