@@ -64,7 +64,7 @@ The negotiation logic lives in `engine.js`, separate from the page, so it can be
 
 The page labels reported information and assumptions separately. The broad ideas come from community testing: bonuses are outside the wage budget, agents often give more ground on extras than on base wage, and one-off fees can be better than recurring costs.
 
-The exact stripping order, concession order, role bands, scoring rates, and opening percentages are assumptions. They are deliberately easy to change at the top of `engine.js`. The tool also assumes 52-week contract years and does not use sell-on clauses as a sweetener.
+The exact stripping order, concession order, role bands, scoring rates, and opening percentages are assumptions. They are deliberately easy to change at the top of `engine.js`. The tool also assumes 52-week contract years and does not use sell-on clauses as a sweetener. The loyalty bonus is costed as a guaranteed total paid across the contract. The wage-after-X-matches clause is advised on but not included in the cost totals, because the match count is not entered.
 
 Treat every OCR result as a suggestion, not as a trusted transcription.
 
