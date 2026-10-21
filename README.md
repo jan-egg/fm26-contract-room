@@ -4,7 +4,7 @@ A small negotiation assistant for Football Manager 2026. Enter the player's dema
 
 There is no build step. Open `index.html` directly, or host the folder with GitHub Pages.
 
-**[Open the tool](https://YOUR-USERNAME.github.io/fm26-contract-room/)**
+**[Open the tool](https://jan-egg.github.io/fm26-contract-room/)**
 
 ## What it does
 
@@ -16,8 +16,13 @@ You can also paste or upload a contract screenshot. The optional OCR reader sugg
 
 1. Enter the current demand, or read it from a screenshot.
 2. Set the contract length, expected role, position, and season fixture count.
-3. Follow the suggested offer and record whether the agent moved, stalled, or accepted.
-4. Use **Export my data** for a backup or to move calibration data to another browser.
+3. Follow the suggested offer. The offer table shows every term side by side with his demand, and **Copy offer** puts it on your clipboard.
+4. Record whether the agent moved, stalled, or accepted. **Undo last round** takes back a mis-click, including a signing logged by mistake.
+5. Use **Export my data** for a backup or to move calibration data to another browser. Importing merges with the deals you already have.
+
+The negotiation in progress and the demand sheet are saved as you go, so you can refresh or close the tab and pick up where you left off. **Clear demand sheet** zeroes the player's figures and starts a new negotiation, but keeps your settings.
+
+A walk-away ceiling, if you set one, is a hard cap: the tool never suggests a wage above it. If the agent comes back asking for no more than your last offer, it tells you to accept as it stands.
 
 The negotiation has four stages:
 
@@ -39,25 +44,27 @@ Treat the ceiling seriously because these bonuses are not capped.
 
 ## Calibration and OCR
 
-Each accepted deal records the final wage as a ratio of the opening demand. After three deals in the same situation, your measured data replaces the default opening factor.
+Each accepted deal records the final wage as a ratio of the opening demand, measured per week so that switching the display period mid-negotiation does not skew it. After three deals in the same situation, your measured data replaces the default opening factor.
 
 Calibration is saved in browser storage when available. Export it before clearing browser data or moving to another device.
 
-Screenshot OCR is optional and loads Tesseract from jsDelivr the first time you use it. The tool still works without OCR, including when offline.
+Screenshot OCR is optional and loads Tesseract from jsDelivr the first time you use it. The reader prefers figures marked with a currency symbol or a k/M suffix, so a line like "Wage after 20 matches €18,000" reads as 18,000 rather than 20. The tool still works without OCR, including when offline.
 
 ## Privacy and security
 
-There is no server or account. Screenshots are read in your browser and are not sent to this project. Calibration data stays in browser storage unless you export it. The OCR feature does download a pinned Tesseract script from jsDelivr, so disable OCR or use a trusted local copy if your environment does not allow third-party scripts.
+There is no server or account. Screenshots are read in your browser and are not sent to this project. Calibration data stays in browser storage unless you export it. The OCR feature downloads a pinned Tesseract script from jsDelivr, checked against an integrity hash. That script then fetches its own worker, WebAssembly core, and English language data from public CDNs. Your screenshot is not part of any of those requests, but if your environment does not allow third-party scripts, do not use OCR.
 
 ## Running it
 
 Open `index.html` in a browser. To publish it, enable GitHub Pages and deploy the repository from the `main` branch and root folder.
 
+The negotiation logic lives in `engine.js`, separate from the page, so it can be tested. With Node 18 or later, run `npm test`. There are no dependencies to install.
+
 ## What is certain, and what is not
 
 The page labels reported information and assumptions separately. The broad ideas come from community testing: bonuses are outside the wage budget, agents often give more ground on extras than on base wage, and one-off fees can be better than recurring costs.
 
-The exact stripping order, concession order, role bands, scoring rates, and opening percentages are assumptions. They are deliberately easy to change in the script. The tool also assumes 52-week contract years and does not use sell-on clauses as a sweetener.
+The exact stripping order, concession order, role bands, scoring rates, and opening percentages are assumptions. They are deliberately easy to change at the top of `engine.js`. The tool also assumes 52-week contract years and does not use sell-on clauses as a sweetener.
 
 Treat every OCR result as a suggestion, not as a trusted transcription.
 
