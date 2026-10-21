@@ -4,50 +4,11 @@
   let captureUrl = null;
   let detected = {};
 
-  const FIELDS = [
-    ['wage','Base wage',/\b(?:base\s*)?wage\b(?!\s*(?:rise|increase|after))|\bsalary\b/i],
-    ['rise','Yearly wage rise (%)',/(?:yearly|annual|wage)\s*(?:wage\s*)?(?:rise|increase)/i],
-    ['signon','Signing-on fee',/signing[\s-]*on/i],
-    ['loyalty','Loyalty bonus',/loyalty/i],
-    ['agent','Agent fee',/agent(?:'s)?\s*fee/i],
-    ['appfee','Appearance fee',/appearance/i],
-    ['goal','Goal bonus',/goal/i],
-    ['assist','Assist bonus',/assist/i],
-    ['csb','Clean sheet bonus',/clean\s*sheet/i],
-    ['sub','Unused sub fee',/unused\s*(?:sub|substitute)/i],
-    ['wageafter','Wage after X matches',/wage\s*after/i],
-    ['release','Minimum fee release',/release/i]
-  ];
+  const { KEYS, LABEL, findValues } = window.ContractEngine;
 
   const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({
     '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
   })[char]);
-
-  const captureNumber = line => {
-    const match = line.match(/(\d[\d\s.,]*)(?:\s*([km]))?\s*%?/i);
-    if(!match) return null;
-    let value = match[1].replace(/\s/g,'');
-    if(value.includes(',') && value.includes('.') && value.lastIndexOf(',') > value.lastIndexOf('.')){
-      value = value.replace(/\./g,'').replace(',','.');
-    }else value = value.replace(/,/g,'');
-    const number = parseFloat(value);
-    const suffix = (match[2] || '').toLowerCase();
-    if(!Number.isFinite(number)) return null;
-    return number * (suffix === 'k' ? 1000 : suffix === 'm' ? 1000000 : 1);
-  };
-
-  const findValues = text => {
-    const values = {};
-    text.split(/\r?\n/).forEach(line => {
-      FIELDS.forEach(([key,,pattern]) => {
-        if(values[key] === undefined && pattern.test(line)){
-          const value = captureNumber(line);
-          if(value !== null) values[key] = value;
-        }
-      });
-    });
-    return values;
-  };
 
   const showFile = file => {
     if(!file || !file.type.startsWith('image/')) return;
@@ -64,15 +25,17 @@
     if(window.Tesseract){ resolve(window.Tesseract); return; }
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+    script.integrity = 'sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F';
+    script.crossOrigin = 'anonymous';
     script.onload = () => window.Tesseract ? resolve(window.Tesseract) : reject(new Error('OCR unavailable'));
     script.onerror = () => reject(new Error('OCR download failed'));
     document.head.appendChild(script);
   });
 
   const renderResults = () => {
-    const fields = FIELDS.filter(([key]) => detected[key] !== undefined);
-    $('captureFields').innerHTML = fields.length ? fields.map(([key,label]) =>
-      '<label class="capture-field"><input type="checkbox" data-capture-key="'+key+'" checked> '+escapeHtml(label)+
+    const fields = KEYS.filter(key => detected[key] !== undefined);
+    $('captureFields').innerHTML = fields.length ? fields.map(key =>
+      '<label class="capture-field"><input type="checkbox" data-capture-key="'+key+'" checked> '+escapeHtml(LABEL[key])+
       ' <input type="number" id="capture_'+key+'" value="'+detected[key]+'" min="0" step="any"></label>'
     ).join('') : '<p class="hint">No labelled amounts were recognised. Try a tighter crop or a clearer screenshot.</p>';
     $('captureResults').hidden = false;

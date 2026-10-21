@@ -1,0 +1,8 @@
+{
+  "name": "fm26-contract-room",
+  "private": true,
+  "description": "Negotiation assistant for Football Manager 2026. No build step and no dependencies.",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  }
+}
