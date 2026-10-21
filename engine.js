@@ -205,8 +205,6 @@
     }
     offer.wage = wage;
 
-    steps.push('<b>Offer this wage:</b> <span class="bignum">'+fmt.wage(offer.wage)+' '+fmt.per+'</span>against his '+fmt.wage(d.wage)+' '+fmt.per+'.');
-
     const cD=packageCost(inp,d), cO=packageCost(inp,offer);
     return { steps, warns, offer, demand:d, why, phase, concession, capped, cD, cO,
              savedLo:cD.lo-cO.lo, savedHi:cD.hi-cO.hi };
@@ -302,7 +300,7 @@
     return values;
   }
 
-  const api = { TERMS, KEYS, LABEL, STRIP_ORDER, CONCESSIONS, ROLE, POS, OPENING, CTXNAME,
+  const api = { TERMS, KEYS, LABEL, STRIP_ORDER, CONCESSIONS, ROLE, POS, OPENING, CTXNAME, PHASES,
     events, bonusSeason, packageCost, niceWage, fresh, openingFactor, normalizeStore, mergeCloses,
     normalizeSession, recommend, advance, parseAmount, captureNumber, findValues };
   if(typeof module!=='undefined' && module.exports) module.exports = api;

@@ -9,9 +9,27 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Archivo+Narrow:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
+    color-scheme:light;
     --paper:#E9ECE4; --sheet:#F6F8F2; --ink:#16211C; --muted:#5C6A5F;
     --rule:#C6CDBD; --rule-strong:#9BA893;
     --act:#1D6B4A; --cost:#A8382B; --flag:#8A6A12;
+    --field:#fff; --band:#DFE4D7; --hover:#EFF2E9; --warn-bg:#F4EEDC; --flash:#FFF3C4;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
+      --paper:#121815; --sheet:#1A221E; --ink:#E4EAE2; --muted:#9AA79D;
+      --rule:#2E3A33; --rule-strong:#46564C;
+      --act:#5FBF8E; --cost:#EE8170; --flag:#D9B24C;
+      --field:#0F1512; --band:#232D27; --hover:#24302A; --warn-bg:#2B2716; --flash:#3B3414;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --paper:#121815; --sheet:#1A221E; --ink:#E4EAE2; --muted:#9AA79D;
+    --rule:#2E3A33; --rule-strong:#46564C;
+    --act:#5FBF8E; --cost:#EE8170; --flag:#D9B24C;
+    --field:#0F1512; --band:#232D27; --hover:#24302A; --warn-bg:#2B2716; --flash:#3B3414;
   }
   *{box-sizing:border-box}
   [hidden]{display:none!important}
@@ -23,7 +41,12 @@
   .masthead{border-bottom:2px solid var(--ink);padding-bottom:10px;display:flex;
     justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
   .phasebar{font-family:'Archivo Narrow';font-weight:600;font-size:13px;color:var(--muted);text-align:right}
-  .phasebar b{color:var(--ink);font-size:15px;display:block}
+  .phasebar .round{color:var(--ink);font-size:15px}
+  .stepper{display:flex;gap:4px;margin:6px 0 0;padding:0;list-style:none}
+  .stepper li{padding:3px 9px;border:1px solid var(--rule-strong);border-radius:2px;font-size:12.5px;color:var(--muted);background:var(--sheet)}
+  .stepper li.done{color:var(--ink);border-style:dashed}
+  .stepper li.now{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .theme{background:none;border:none;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;padding:0;text-decoration:underline;margin-left:8px}
 
   section{margin-top:24px}
   h2{font-family:'Archivo Narrow';font-weight:600;font-size:18px;margin:0 0 3px}
@@ -33,7 +56,7 @@
   .row{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end}
   .field{display:flex;flex-direction:column;gap:3px}
   .field label{font-size:12px;color:var(--muted)}
-  input,select{font-family:inherit;font-size:14px;color:var(--ink);background:#fff;
+  input,select{font-family:inherit;font-size:14px;color:var(--ink);background:var(--field);
     border:1px solid var(--rule-strong);border-radius:2px;padding:5px 7px;font-variant-numeric:tabular-nums}
   input[type=number]{width:96px;text-align:right}
   input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--act);outline-offset:1px}
@@ -44,15 +67,30 @@
   .demand th,.demand td{padding:5px 10px;border-bottom:1px solid var(--rule);text-align:right;font-variant-numeric:tabular-nums}
   .demand th{font-family:'Archivo Narrow';font-size:12.5px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--rule-strong)}
   .demand td:first-child,.demand th:first-child{text-align:left;font-variant-numeric:normal}
-  .demand tr.head td{background:#DFE4D7;font-family:'Archivo Narrow';font-weight:600;font-size:12.5px;
+  .demand tr.head td{background:var(--band);font-family:'Archivo Narrow';font-weight:600;font-size:12.5px;
     letter-spacing:.03em;padding:4px 10px}
   .demand input[type=number]{width:88px}
-  .demand input[type=checkbox]{width:15px;height:15px;accent-color:var(--cost)}
+  .demand input[type=checkbox]{width:17px;height:17px;accent-color:var(--cost);cursor:pointer}
+  .demand .unit{display:block;font-size:11px;color:var(--muted);line-height:1.2;margin-top:2px}
+  .demand tr.zero td:first-child{color:var(--muted)}
+  .demand tr.locked td:first-child::after{content:' · locked';font-size:11px;color:var(--cost)}
+  .demand input.flash{background:var(--flash);transition:background .2s}
+  .sheet-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
 
   /* action card */
   .action{border:1px solid var(--rule-strong);border-left:5px solid var(--act);background:var(--sheet);padding:16px 18px}
   .action h3{font-family:'Archivo Narrow';font-size:21px;margin:0 0 2px;font-weight:700}
   .action .why{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+  .hero{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding:10px 0 12px;margin-bottom:12px;border-bottom:1px solid var(--rule)}
+  .hero .bignum{font-size:34px;margin:0}
+  .hero .vs{color:var(--muted);font-size:13px}
+  .hero .pct{font-family:'Archivo Narrow';font-weight:600;font-size:14px;color:var(--act)}
+  .empty{color:var(--muted);font-size:14px;margin:4px 0 0}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 14px;margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)}
+  .stat span{display:block;font-size:11.5px;color:var(--muted)}
+  .stat b{font-family:'Archivo Narrow';font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+  .stat b.good{color:var(--act)}
+  .stat small{display:block;font-size:11.5px;color:var(--muted)}
   ol.steps{margin:0;padding-left:20px}
   ol.steps li{margin-bottom:9px}
   ol.steps li b{font-weight:600}
@@ -69,14 +107,14 @@
   table.offer tr.cut td:last-child{color:var(--cost);font-weight:600}
   table.offer tr.add td:last-child{color:var(--act);font-weight:600}
   button.act:disabled{opacity:.45;cursor:default}
-  .warn{margin-top:12px;padding:9px 11px;background:#F4EEDC;border-left:3px solid var(--flag);font-size:13px}
+  .warn{margin-top:12px;padding:9px 11px;background:var(--warn-bg);border-left:3px solid var(--flag);font-size:13px}
 
   .outcomes{margin-top:16px}
   .outcomes p{font-size:12.5px;color:var(--muted);margin:0 0 7px}
   .btns{display:flex;flex-wrap:wrap;gap:8px}
   .act{font-family:'Archivo Narrow';font-weight:600;font-size:14px;cursor:pointer;
-    background:#fff;border:1px solid var(--rule-strong);border-radius:2px;padding:7px 12px;color:var(--ink)}
-  .act:hover{background:#EFF2E9}
+    background:var(--field);border:1px solid var(--rule-strong);border-radius:2px;padding:7px 12px;color:var(--ink)}
+  .act:hover:not(:disabled){background:var(--hover)}
   .act.primary{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
   .act.ghost{border-style:dashed;color:var(--muted)}
 
@@ -92,27 +130,39 @@
   .calib .inferred{color:var(--muted)}
 
   .notes{border-top:2px solid var(--ink);margin-top:32px;padding-top:14px;
-    display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+  .notes summary{cursor:pointer;font-family:'Archivo Narrow';font-weight:600;font-size:15px;margin-bottom:6px}
+  .mobilebar{display:none}
+  body.offer-visible .mobilebar{display:none!important}
   .notes h3{font-family:'Archivo Narrow';font-size:15px;margin:0 0 6px}
   .notes li,.notes p{font-size:12.5px;color:var(--muted);margin:0 0 6px}
   .notes ul{padding-left:16px;margin:0}
   .tag{display:inline-block;font-size:10.5px;padding:1px 5px;border:1px solid var(--rule-strong);
-    border-radius:2px;color:var(--ink);background:#fff;margin-right:5px}
+    border-radius:2px;color:var(--ink);background:var(--field);margin-right:5px}
   .capture-panel{margin-bottom:12px}
   .capture-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
   .capture-head strong{font-family:'Archivo Narrow';font-size:16px}
   .capture-head .hint{margin:3px 0 0}
-  kbd{font:inherit;font-size:11px;border:1px solid var(--rule-strong);background:#fff;padding:1px 4px;border-radius:2px}
+  kbd{font:inherit;font-size:11px;border:1px solid var(--rule-strong);background:var(--field);padding:1px 4px;border-radius:2px}
   .capture-label{display:inline-block;white-space:nowrap}
   .capture-preview{display:flex;gap:14px;align-items:flex-start;margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)}
-  .capture-preview img{display:block;max-width:min(320px,100%);max-height:180px;border:1px solid var(--rule-strong);object-fit:contain;background:#fff}
+  .capture-preview img{display:block;max-width:min(320px,100%);max-height:180px;border:1px solid var(--rule-strong);object-fit:contain;background:var(--field)}
   .capture-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
   .capture-actions .hint{margin:0}
   .capture-results{margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)}
   .capture-field{display:inline-flex;align-items:center;gap:5px;margin:0 12px 8px 0;font-size:13px}
   .capture-field input[type=number]{width:96px}
 
-  @media (max-width:860px){ .cols{grid-template-columns:1fr} .notes{grid-template-columns:1fr} }
+  @media (max-width:860px){
+    .cols{grid-template-columns:1fr} .notes{grid-template-columns:1fr}
+    .mobilebar:not([hidden]){display:flex;position:fixed;left:0;right:0;bottom:0;z-index:5;align-items:center;justify-content:space-between;
+      gap:10px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--ink);color:var(--paper);text-decoration:none;
+      font-family:'Archivo Narrow';font-weight:600;font-size:15px;box-shadow:0 -2px 10px rgba(0,0,0,.2)}
+    .mobilebar b{font-size:20px;font-variant-numeric:tabular-nums}
+    .wrap{padding-bottom:110px}
+    .masthead{align-items:flex-start}
+    .phasebar{text-align:left}
+  }
   @media (max-width:560px){.capture-head,.capture-preview{display:block}.capture-label{margin-top:10px}.capture-preview img{margin-bottom:10px}}
 </style>
 </head>
@@ -124,7 +174,11 @@
     <h1>Contract Room</h1>
     <p class="sub">Type in what he's demanding. It tells you what to offer back, round by round, until he signs.</p>
   </div>
-  <div class="phasebar">Round <b id="roundNum">1</b><span id="phaseName">Opening</span></div>
+  <div class="phasebar">
+    <span class="round">Round <span id="roundNum">1</span></span><span id="phaseName" hidden>Opening</span>
+    <button class="theme" id="themeBtn" type="button"></button>
+    <ol class="stepper" id="stepper" aria-label="Negotiation stage"></ol>
+  </div>
 </header>
 
 <section>
@@ -141,15 +195,17 @@
     <div class="field"><label for="years">Contract length (years)</label><input id="years" type="number" value="4" min="0.5" step="0.5"></div>
     <div class="field"><label for="stall">Ladder rounds before pivoting</label><input id="stall" type="number" value="2" min="1" max="5"></div>
     <div class="field"><label for="walkaway">Walk-away wage ceiling (0 = none)</label><input id="walkaway" type="number" value="0" min="0"></div>
-    <button class="act ghost" id="clearInputs" type="button" title="Zeroes the demand sheet and ceiling and starts a new negotiation. Your settings stay.">Clear demand sheet</button>
   </div>
 </section>
 
 <div class="cols">
 
   <section>
-    <h2>What he's demanding now</h2>
-    <p class="hint">Refill this every round with whatever the agent came back with. Tick the padlock column for anything he's locked as non-negotiable.</p>
+    <div class="sheet-head">
+      <h2>What he's demanding now</h2>
+      <button class="act ghost" id="clearInputs" type="button" title="Zeroes the demand sheet and ceiling and starts a new negotiation. Your settings stay.">Clear sheet</button>
+    </div>
+    <p class="hint">Refill this every round with whatever the agent came back with. Tick <b>Locked</b> for anything he's marked as non-negotiable.</p>
     <div class="panel capture-panel">
       <div class="capture-head">
         <div>
@@ -202,12 +258,12 @@
   </section>
 
   <section>
-    <h2>Offer this</h2>
+    <h2 id="offerHead">Offer this</h2>
     <p class="hint">Copy it into the negotiation screen, hit suggest terms, then record what came back.</p>
     <div class="action" id="action" aria-live="polite"></div>
 
     <div class="outcomes panel" style="margin-top:14px">
-      <p>What happened after you offered?</p>
+      <p>What happened after you offered? <span id="nextHint"></span></p>
       <div class="btns">
         <button class="act primary" data-out="accepted">He signed</button>
         <button class="act" data-out="moved">Countered lower</button>
@@ -222,10 +278,10 @@
 
 </div>
 
-<section>
+<section id="calibration">
   <h2>Opening factors</h2>
   <p class="hint">Grey figures are guesses taken from community guides for a launch-window build of FM26. Green figures are measured from your own closed deals and override the guess once there are three of them.</p>
-  <div class="panel" style="padding:6px 0 0">
+  <div class="panel" style="padding:6px 0 0;max-width:560px">
     <table class="calib"><tbody id="calibBody"></tbody></table>
   </div>
   <div class="row" style="margin-top:10px">
@@ -237,8 +293,8 @@
 </section>
 
 <div class="notes">
-  <div>
-    <h3>Why it strips before it haggles</h3>
+  <details id="notesWhy">
+    <summary>Why it strips before it haggles</summary>
     <ul>
       <li><span class="tag">reported</span>FM26 agents barely move on base wage but will drop or remove peripheral demands like appearance fees. So the wage ladder is short and the stripping does the work.</li>
       <li><span class="tag">reported</span>Bonuses don't count against your wage budget, which is why they get waved through and then quietly outgrow the wage.</li>
@@ -246,9 +302,9 @@
       <li><span class="tag">reported</span>Raising the agent fee instead of the wage converts a recurring cost into a one-off.</li>
       <li><span class="tag">reported</span>Walking away and returning about a week later often brings a softer demand.</li>
     </ul>
-  </div>
-  <div>
-    <h3>Where it could be wrong</h3>
+  </details>
+  <details id="notesWrong">
+    <summary>Where it could be wrong</summary>
     <ul>
       <li><span class="tag">assumed</span>Removal order: unused sub fee, then appearance fee, then wage rise, then goal and assist bonuses. Ranked by how much each one costs when the signing works out, not by tested agent resistance.</li>
       <li><span class="tag">assumed</span>Concession order when the ladder dies: agent fee, signing-on fee, loyalty bonus.</li>
@@ -256,10 +312,12 @@
       <li><span class="tag">reported</span>There's a negotiation bug where editing anything snaps a softened demand back to the original figure. If the agent volunteers a low wage, take it rather than counter.</li>
       <li>Sell-on clauses are deliberately not used as a sweetener here. They tax the exit, and the exit is the point.</li>
     </ul>
-  </div>
+  </details>
 </div>
 
 </div>
+
+<a class="mobilebar" id="mobileBar" href="#offerHead" hidden><span id="mobileBarText">Offer</span><b id="mobileBarWage"></b></a>
 
 <script src="engine.js"></script>
 <script src="ocr.js"></script>
@@ -274,8 +332,9 @@
   TERMS.forEach(t=>{
     const tr=document.createElement('tr');
     if(t.h){ tr.className='head'; tr.innerHTML='<td colspan="3">'+t.h+'</td>'; dBody.appendChild(tr); return; }
-    tr.innerHTML='<td>'+t.label+'</td>'+
-      '<td><input type="number" id="d_'+t.k+'" value="'+t.def+'" min="0" step="any" aria-label="'+t.label+'"></td>'+
+    tr.id='row_'+t.k;
+    tr.innerHTML='<td><label for="d_'+t.k+'">'+t.label.replace(' (%)','')+'</label><span class="unit" id="u_'+t.k+'"></span></td>'+
+      '<td><input type="number" inputmode="decimal" id="d_'+t.k+'" value="'+t.def+'" min="0" step="any"></td>'+
       '<td><input type="checkbox" id="l_'+t.k+'" aria-label="'+t.label+' locked"></td>';
     dBody.appendChild(tr);
   });
@@ -335,31 +394,68 @@
         (r.offer[k]!==r.demand[k] ? '  (he wants '+(r.demand[k]>0?termValue(k,r.demand[k]):'none')+')' : '')).join('\n');
   }
 
+  const PHASE_NAME={open:'Opening',ladder:'Wage ladder',pivot:'Pivot to lump sums',walk:'Walk away'};
+  const PHASE_SHORT={open:'Open',ladder:'Ladder',pivot:'Pivot',walk:'Walk'};
+  const UNIT={ rise:'% a year', signon:'one-off', loyalty:'one-off', agent:'one-off', appfee:'per game',
+    goal:'per goal', assist:'per assist', csb:'per clean sheet', sub:'per game on the bench', release:'fee' };
+
+  function renderSheet(inp){
+    KEYS.forEach(k=>{
+      $('u_'+k).textContent = k==='wage' || k==='wageafter' ? cur()+' '+perLabel() : UNIT[k];
+      $('row_'+k).classList.toggle('zero', !(inp.demand[k]>0));
+      $('row_'+k).classList.toggle('locked', !!inp.locks[k]);
+    });
+  }
+
+  function stat(label, value, note, cls){
+    return '<div class="stat"><span>'+label+'</span><b'+(cls?' class="'+cls+'"':'')+'>'+value+'</b>'+(note?'<small>'+note+'</small>':'')+'</div>';
+  }
+
   function render(){
     const inp=readInputs();
     const r=lastRec=E.recommend(inp, S, store.closes, formatters());
+    renderSheet(inp);
     $('roundNum').textContent=S.round;
-    $('phaseName').textContent={open:'Opening',ladder:'Wage ladder',pivot:'Pivot to lump sums',walk:'Walk away'}[r.phase];
+    $('phaseName').textContent=PHASE_NAME[r.phase];
+    const at=E.PHASES.indexOf(r.phase);
+    $('stepper').innerHTML=E.PHASES.map((ph,i)=>'<li class="'+(i<at?'done':i===at?'now':'')+'"'+
+      (i===at?' aria-current="step"':'')+' title="'+PHASE_NAME[ph]+'">'+PHASE_SHORT[ph]+'</li>').join('');
 
-    const head={open:'Strip it, then open low',ladder:'Close the gap',pivot:'Stop raising the wage',walk:'Leave the room'}[r.phase];
-    $('action').innerHTML =
-      '<h3>'+head+'</h3><p class="why">'+r.why+'</p>'+
-      '<ol class="steps">'+r.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol>'+
-      r.warns.map(w=>'<div class="warn">'+w+'</div>').join('')+
-      offerTable(r)+
-      '<div class="btns" style="margin-top:10px"><button class="act" type="button" id="copyOffer">Copy offer</button>'+
-        '<span class="hint" id="copyState" role="status" style="margin:0;align-self:center"></span></div>'+
-      '<div class="costline">Your offer costs <strong>'+fmtRange(r.cO.lo,r.cO.hi)+'</strong> over '+r.cO.yrs+
-        ' years. His demand costs <strong>'+fmtRange(r.cD.lo,r.cD.hi)+'</strong>. You save '+fmt(r.savedLo)+
-        ' if he barely plays and <strong>'+fmt(r.savedHi)+'</strong> if he plays everything.<br>'+
-        'Guaranteed either way: '+fmt(r.cO.gtd)+'. Bonus exposure on top: '+fmtRange(r.cO.varLo,r.cO.varHi)+
-        '. Wage budget sees '+fmtw(r.cO.weekly)+'/wk, the ceiling is really '+fmtw(r.cO.hi/(52*r.cO.yrs))+'/wk.</div>';
-    $('copyOffer').addEventListener('click', copyOffer);
+    const hasWage = inp.demand.wage>0;
+    $('mobileBar').hidden = !hasWage;
+    $('mobileBarText').textContent = 'Round '+S.round+' · offer';
+    $('mobileBarWage').textContent = plainWage(r.offer.wage)+' '+perLabel();
+
+    if(!hasWage){
+      $('action').innerHTML='<h3>Start with his base wage</h3><p class="empty">Enter what he is asking for on the left, or paste a screenshot of the contract screen, and the offer appears here.</p>';
+    } else {
+      const head={open:'Strip it, then open low',ladder:'Close the gap',pivot:'Stop raising the wage',walk:'Leave the room'}[r.phase];
+      const pct = Math.round((1 - r.offer.wage/inp.demand.wage)*100);
+      const save = r.savedHi>0.5;
+      $('action').innerHTML =
+        '<h3>'+head+'</h3><p class="why">'+r.why+'</p>'+
+        '<div class="hero"><span class="bignum">'+fmtw(r.offer.wage)+' '+perLabel()+'</span>'+
+          '<span class="vs">against his '+fmtw(inp.demand.wage)+'</span>'+
+          (pct>0 ? '<span class="pct">'+pct+'% under</span>' : '')+'</div>'+
+        r.warns.map(w=>'<div class="warn">'+w+'</div>').join('')+
+        '<ol class="steps">'+r.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol>'+
+        offerTable(r)+
+        '<div class="btns" style="margin-top:10px"><button class="act" type="button" id="copyOffer">Copy offer</button>'+
+          '<span class="hint" id="copyState" role="status" style="margin:0;align-self:center"></span></div>'+
+        '<div class="stats">'+
+          stat('Your offer, '+r.cO.yrs+' years', fmtRange(r.cO.lo,r.cO.hi), fmt(r.cO.gtd)+' guaranteed')+
+          stat('His demand', fmtRange(r.cD.lo,r.cD.hi), fmt(r.cD.gtd)+' guaranteed')+
+          stat('You save', save ? 'up to '+fmt(r.savedHi) : fmt(0), save ? fmt(r.savedLo)+' if he barely plays' : '', save?'good':'')+
+          stat('Real weekly cost', fmtw(r.cO.hi/(52*r.cO.yrs))+'/wk', 'wage budget sees '+fmtw(r.cO.weekly)+'/wk')+
+        '</div>';
+      $('copyOffer').addEventListener('click', copyOffer);
+    }
 
     $('log').innerHTML = S.log.length
       ? '<table><tbody>'+S.log.map(l=>'<tr><td class="r">Round '+html(l.round)+'</td><td>offered '+fmtw(l.offered)+
           '</td><td>he wanted '+fmtw(l.demand)+'</td><td>'+html(l.out)+'</td></tr>').join('')+'</tbody></table>'
       : '';
+    document.querySelectorAll('[data-out]').forEach(b=>{ if(b.dataset.out!=='reset') b.disabled=!hasWage; });
     $('undoBtn').disabled = !history.length;
     renderCalib();
   }
@@ -390,15 +486,35 @@
   /* ---------- outcomes ---------- */
   document.querySelectorAll('[data-out]').forEach(b=>b.addEventListener('click',()=>{
     const out=b.dataset.out;
-    if(out==='reset'){ history=[]; S=E.fresh(); changed(); return; }
-    const inp=readInputs(), r=E.recommend(inp, S, store.closes, formatters());
     history.push({ S, closes: store.closes.length });
     if(history.length>50) history.shift();
+    if(out==='reset'){ S=E.fresh(); changed(); flashHint('New negotiation started. Undo brings the last one back.'); return; }
+    const inp=readInputs(), r=E.recommend(inp, S, store.closes, formatters());
     const res=E.advance(S, out, r, inp);
     S=res.S;
     if(res.close){ store.closes.push(res.close); persist(); }
     changed();
+    if(out==='moved') promptNewDemand();
+    else if(out==='accepted') flashHint('Deal logged for calibration. Enter the next player when you are ready.');
+    else if(out==='stalled') flashHint('Same demand, so nothing to update. Offer the new terms above.');
   }));
+  // After a counter the sheet is stale: take the user straight to the figure that changed.
+  function promptNewDemand(){
+    const el=$('d_wage');
+    el.focus({preventScroll:true});
+    el.scrollIntoView({block:'center', behavior:'smooth'});
+    el.select();
+    el.classList.add('flash');
+    setTimeout(()=>el.classList.remove('flash'), 1800);
+    flashHint('Type his new demand into the sheet. The offer updates as you type.');
+  }
+  let hintTimer=null;
+  function flashHint(text){
+    $('nextHint').textContent=text;
+    clearTimeout(hintTimer);
+    hintTimer=setTimeout(()=>{ $('nextHint').textContent=''; }, 6000);
+  }
+
   $('undoBtn').addEventListener('click',()=>{
     const prev=history.pop(); if(!prev) return;
     S=prev.S;
@@ -507,6 +623,33 @@
     history=[]; S=E.fresh();
     changed();
   });
+
+  document.addEventListener('focusin', e=>{
+    if(e.target.matches && e.target.matches('input[type=number]')) setTimeout(()=>e.target.select(), 0);
+  });
+
+  // Theme: follows the system unless the user picks one.
+  const THEMES=['auto','light','dark'];
+  let theme='auto';
+  try{ theme=localStorage.getItem('fm26:theme')||'auto'; }catch(e){}
+  function applyTheme(){
+    if(theme==='auto') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', theme);
+    $('themeBtn').textContent='Theme: '+theme;
+  }
+  $('themeBtn').addEventListener('click',()=>{
+    theme=THEMES[(THEMES.indexOf(theme)+1)%THEMES.length];
+    try{ localStorage.setItem('fm26:theme', theme); }catch(e){}
+    applyTheme();
+  });
+  applyTheme();
+
+  // Hide the mobile offer bar while the offer itself is on screen.
+  if('IntersectionObserver' in window){
+    let visible=false;
+    new IntersectionObserver(es=>{ visible=es[0].isIntersecting; document.body.classList.toggle('offer-visible', visible); })
+      .observe($('action'));
+  }
 
   document.addEventListener('input', e=>{ if(e.target.closest('.capture-panel')) return; changed(); });
   document.addEventListener('change', e=>{ if(e.target.closest('.capture-panel')) return; changed(); });
