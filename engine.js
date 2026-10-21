@@ -29,11 +29,13 @@
   // [min share of fixtures, max share, share of remaining games spent as an unused sub]
   const ROLE = { starter:[0.55,0.92,0.15], rotation:[0.30,0.62,0.40],
                  backup:[0.10,0.35,0.50],  fringe:[0.02,0.20,0.30] };
-  // per-appearance rates, floor to ceiling
-  const POS = { gk:{g:[0,0],     a:[0,0.02],   cs:[0.18,0.45]},
-                def:{g:[0.02,0.12], a:[0.02,0.12], cs:[0.18,0.45]},
-                mid:{g:[0.04,0.30], a:[0.06,0.35], cs:[0,0]},
-                att:{g:[0.20,0.85], a:[0.06,0.30], cs:[0,0]} };
+  // Per-appearance rates, floor to ceiling. A clean sheet is a team result, so if the clause is in his
+  // contract it can trigger whatever his position; the rate is the same for everyone on the pitch.
+  const CS = [0.18,0.45];
+  const POS = { gk:{g:[0,0],     a:[0,0.02],   cs:CS},
+                def:{g:[0.02,0.12], a:[0.02,0.12], cs:CS},
+                mid:{g:[0.04,0.30], a:[0.06,0.35], cs:CS},
+                att:{g:[0.20,0.85], a:[0.06,0.30], cs:CS} };
 
   const OPENING = { transfer:0.80, freeagent:0.65, renewal:0.85 };
   const CTXNAME = { transfer:'Transfer target', freeagent:'Free agent', renewal:'Renewal' };
@@ -140,7 +142,7 @@
     }
     if(lockedStrip.length){
       steps.push('<b>He has locked '+lockedStrip.map(k=>LABEL[k]).join(', ')+'</b>, an exposure of up to '+fmt.money(ceilingOf(lockedStrip))+
-        '. Ask the agent not to lock clauses down, then remove them. If he will not budge, scale them down in the same proportion as the wage rather than leaving them at the demanded figure.');
+        '. A locked clause has to stay in, but the figure is still yours to set: the offer scales them down by the same proportion as the wage.');
     }
 
     // clauses
@@ -149,8 +151,13 @@
         ? 'Locked, so push the value up as far as he will take it. A clause near his current worth kills the resale, which costs you far more than the wage ever will.'
         : 'Remove it. If he insists, raise the figure well above what you expect him to be worth on exit.'));
     }
-    if(d.wageafter>0 && locked('wageafter')){
-      warns.push('The wage-after-X-matches clause is locked. Do not strip it, and cut it by the same percentage as the base wage, or the deal quietly reprices itself mid-contract.');
+    if(d.wageafter>0){
+      if(locked('wageafter')){
+        warns.push('The wage-after-X-matches clause is locked. Keep it, but the offer cuts it by the same percentage as the base wage, or the deal quietly reprices itself mid-contract. It is not in the cost totals below, because the match count is not entered here.');
+      } else {
+        steps.push('<b class="strip">Remove the wage-after-X-matches clause.</b> It is a pay rise he triggers just by playing, and it is not in the cost totals below.');
+        offer.wageafter = 0;
+      }
     }
 
     // Concessions: locked ones stay at his figure and stop being currency; given ones stay in.
@@ -183,7 +190,9 @@
         const amt = d[concession]>0 ? d[concession] : niceWage(toWeekly(d.wage, inp.period)*CONCESSION_WEEKS[concession]);
         offer[concession] = amt;
         steps.push('<b class="keep">Hold the wage and give him the '+LABEL[concession].toLowerCase()+' instead:</b> '+fmt.money(amt)+
-          '. A one-off payment, and it never scales with how well he plays. Raise this rather than the weekly figure.');
+          (concession==='loyalty'
+            ? ' in total. It is paid out across the contract, and the rest is still owed if you sell him, but it is a fixed sum that never scales with how well he plays.'
+            : '. A one-off payment, and it never scales with how well he plays.')+' Raise this rather than the weekly figure.');
         why = 'Wage frozen. The ladder stopped moving, so you are buying the signature with a lump sum instead.';
       } else {
         phase='walk';
@@ -204,6 +213,12 @@
       warns.push('Capped at your walk-away ceiling of '+fmt.wage(ceil)+' '+fmt.per+'. If he will not take this, walk.');
     }
     offer.wage = wage;
+
+    // Locked clauses stay in, cut by the same proportion as the wage.
+    const ratio = d.wage>0 ? Math.min(1, wage/d.wage) : 1;
+    lockedStrip.concat(d.wageafter>0 && locked('wageafter') ? ['wageafter'] : []).forEach(k=>{
+      offer[k] = k==='rise' ? Math.round(d[k]*ratio*2)/2 : niceWage(d[k]*ratio);
+    });
 
     const cD=packageCost(inp,d), cO=packageCost(inp,offer);
     return { steps, warns, offer, demand:d, why, phase, concession, capped, cD, cO,

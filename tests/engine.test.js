@@ -20,9 +20,9 @@ test('opening offer strips unlocked bonuses and opens at the community factor', 
   assert.equal(r.offer.sub, 0);
 });
 
-test('locked bonuses stay in the offer', () => {
+test('locked bonuses stay in the offer, cut with the wage', () => {
   const inp = inputs({ demand: demand({ wage: 10000, goal: 1200 }), locks: { goal: true } });
-  assert.equal(E.recommend(inp, E.fresh(), [], fmt).offer.goal, 1200);
+  assert.equal(E.recommend(inp, E.fresh(), [], fmt).offer.goal, 960);
 });
 
 test('locked concessions are kept, not zeroed, and are never offered as a pivot', () => {
@@ -149,4 +149,32 @@ test('screenshot text maps to the right terms and figures', () => {
   assert.deepEqual(E.findValues(text), {
     wage: 15000, wageafter: 18000, rise: 10, goal: 1200, sub: 300, release: 50000000, signon: 250000
   });
+});
+
+test('locked bonuses and a locked wage-after clause scale with the wage cut', () => {
+  const inp = inputs({ demand: demand({ wage: 10000, goal: 1000, rise: 10, wageafter: 15000 }),
+    locks: { goal: true, rise: true, wageafter: true } });
+  const r = E.recommend(inp, E.fresh(), [], fmt);
+  assert.equal(r.offer.wage, 8000);
+  assert.equal(r.offer.goal, 800);
+  assert.equal(r.offer.rise, 8);
+  assert.equal(r.offer.wageafter, 12000);
+});
+
+test('an unlocked wage-after clause is removed', () => {
+  const inp = inputs({ demand: demand({ wage: 10000, wageafter: 15000 }) });
+  assert.equal(E.recommend(inp, E.fresh(), [], fmt).offer.wageafter, 0);
+});
+
+test('a clean sheet bonus costs money whatever the position', () => {
+  const inp = inputs({ pos: 'att' });
+  assert.ok(E.bonusSeason(inp, { csb: 1000 }, true) > 0);
+});
+
+test('bonus ceiling matches a hand calculation', () => {
+  // Starter forward, 40 games: 0.92*40 = 36.8 apps, 31.28 goals, 11.04 assists, 16.56 clean sheets,
+  // 3.2*0.15 = 0.48 unused-sub games.
+  const inp = inputs({ fixtures: 40, role: 'starter', pos: 'att' });
+  const season = E.bonusSeason(inp, { appfee: 100, goal: 1000, assist: 500, csb: 200, sub: 50 }, true);
+  assert.ok(Math.abs(season - (3680 + 31280 + 5520 + 3312 + 24)) < 1e-6);
 });

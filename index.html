@@ -308,6 +308,8 @@
     <ul>
       <li><span class="tag">assumed</span>Removal order: unused sub fee, then appearance fee, then wage rise, then goal and assist bonuses. Ranked by how much each one costs when the signing works out, not by tested agent resistance.</li>
       <li><span class="tag">assumed</span>Concession order when the ladder dies: agent fee, signing-on fee, loyalty bonus.</li>
+      <li><span class="tag">reported</span>The loyalty bonus is a total paid out across the contract, and the rest is still owed if you sell him. It is costed as guaranteed money.</li>
+      <li><span class="tag">assumed</span>The wage-after-X-matches clause and promotion or international-cap rises are not in the cost totals.</li>
       <li><span class="tag">assumed</span>52-week years and no mid-contract status changes. Bonus costs are a range, not a prediction: the floor is a bad season, the ceiling is your full fixture list. The ceiling is the honest number, since nothing caps a bonus.</li>
       <li><span class="tag">reported</span>There's a negotiation bug where editing anything snaps a softened demand back to the original figure. If the agent volunteers a low wage, take it rather than counter.</li>
       <li>Sell-on clauses are deliberately not used as a sweetener here. They tax the exit, and the exit is the point.</li>
@@ -396,7 +398,7 @@
 
   const PHASE_NAME={open:'Opening',ladder:'Wage ladder',pivot:'Pivot to lump sums',walk:'Walk away'};
   const PHASE_SHORT={open:'Open',ladder:'Ladder',pivot:'Pivot',walk:'Walk'};
-  const UNIT={ rise:'% a year', signon:'one-off', loyalty:'one-off', agent:'one-off', appfee:'per game',
+  const UNIT={ rise:'% a year', signon:'one-off', loyalty:'total, paid over the deal', agent:'one-off', appfee:'per game',
     goal:'per goal', assist:'per assist', csb:'per clean sheet', sub:'per game on the bench', release:'fee' };
 
   function renderSheet(inp){
